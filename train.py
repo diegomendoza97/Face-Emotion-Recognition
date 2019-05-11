@@ -1,6 +1,4 @@
-"""
-Description: Train emotion classification model
-"""
+
 
 from keras.callbacks import  ModelCheckpoint
 from keras.preprocessing.image import ImageDataGenerator
@@ -23,13 +21,11 @@ import numpy as np
 dataset_path = 'fer2013.csv'
 image_size=(48,48)
 
-# parameters
+
 batch_size = 32
-#  num_epochs = 110
 num_epochs = 90
 input_shape = (48, 48, 1)
 numClass = 7
-patience = 50
 base_path = 'models/'
 l2_regularization=0.01
 
@@ -107,6 +103,17 @@ x = SeparableConv2D(64, (3, 3), padding='same',kernel_regularizer=regularization
 x = BatchNormalization()(x)
 x = Activation('relu')(x)
 x = SeparableConv2D(64, (3, 3), padding='same',kernel_regularizer=regularization,use_bias=False)(x)
+x = BatchNormalization()(x)
+x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
+x = layers.add([x, residual])
+
+#CNN Model Layer 4
+residual = Conv2D(128, (1, 1), strides=(2, 2),padding='same', use_bias=False)(x)
+residual = BatchNormalization()(residual)
+x = SeparableConv2D(128, (3, 3), padding='same',kernel_regularizer=regularization,use_bias=False)(x)
+x = BatchNormalization()(x)
+x = Activation('relu')(x)
+x = SeparableConv2D(128, (3, 3), padding='same',kernel_regularizer=regularization,use_bias=False)(x)
 x = BatchNormalization()(x)
 x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
 x = layers.add([x, residual])
