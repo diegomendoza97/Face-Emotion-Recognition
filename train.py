@@ -1,6 +1,7 @@
-
-
-from keras.callbacks import  ModelCheckpoint
+"""
+Description: Train emotion classification model
+"""
+from keras.callbacks import  ModelCheckpoint,EarlyStopping
 from keras.preprocessing.image import ImageDataGenerator
 from sklearn.model_selection import train_test_split
 from keras.layers import Activation, Convolution2D, Dropout, Conv2D
@@ -21,11 +22,12 @@ import numpy as np
 dataset_path = 'fer2013.csv'
 image_size=(48,48)
 
-
+# parameters
 batch_size = 32
 num_epochs = 90
 input_shape = (48, 48, 1)
 numClass = 7
+patience = 50
 base_path = 'models/'
 l2_regularization=0.01
 
@@ -117,6 +119,17 @@ x = SeparableConv2D(128, (3, 3), padding='same',kernel_regularizer=regularizatio
 x = BatchNormalization()(x)
 x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
 x = layers.add([x, residual])
+
+#CNN Model Layer 5
+residual = Conv2D(256, (1, 1), strides=(2, 2),padding='same', use_bias=False)(x)
+residual = BatchNormalization()(residual)
+x = SeparableConv2D(256, (3, 3), padding='same',kernel_regularizer=regularization,use_bias=False)(x)
+x = BatchNormalization()(x)
+x = Activation('relu')(x)
+x = SeparableConv2D(256, (3, 3), padding='same',kernel_regularizer=regularization,use_bias=False)(x)
+x = BatchNormalization()(x)
+x = MaxPooling2D((3, 3), strides=(2, 2), padding='same')(x)
+x = layers.add([x, residual])
 x = Conv2D(numClass, (3, 3), padding='same')(x)
 x = GlobalAveragePooling2D()(x)
 output = Activation('softmax',name='predictions')(x)
@@ -128,9 +141,10 @@ model.summary()
 
 # callbacks
 modelsPath = base_path + 'modelTrained'
-modelName = modelsPath + f'.{epoch:02d}-{val_acc:.2f}.hdf5'
+modelName = modelsPath + '.{epoch:02d}-{val_acc:.2f}.hdf5'
 modelFunc = ModelCheckpoint(modelName, 'val_loss', verbose=1,save_best_only=True)
-callbacks = [modelFunc]
+early_stop = EarlyStopping('val_acc', patience=patience)
+callbacks = [modelFunc, early_stop]
 
 
 # loading dataset
