@@ -4,11 +4,9 @@ import cv2
 from keras.models import load_model
 import numpy as np
 
-# parameters for loading data and images
 detection_model_path = 'haarcascade_files/haarcascade_frontalface_default.xml'
 emotion_model_path = 'models/model.54-0.64.hdf5'
 
-# hyper-parameters for bounding boxes shape
 # loading models
 face_detection = cv2.CascadeClassifier(detection_model_path)
 emotion_classifier = load_model(emotion_model_path, compile=False)
@@ -41,7 +39,6 @@ while True:
         label = EMOTIONS[preds.argmax()]
 
         for (i, (emotion, prob)) in enumerate(zip(EMOTIONS, preds)):
-            # construct the label text
             text = "{}: {:.2f}%".format(emotion, prob * 100)
             w = int(prob * 300)
 
@@ -60,11 +57,6 @@ while True:
             numpy_horizontal = np.hstack((frameClone, canvas))
             cv2.imshow('Face Emotion Classifier', numpy_horizontal)
     else:
-
-        # text = "{}: {:.2f}%".format(emotion, prob * 100)
-        # w = int(prob * 300)
-
-
         w = frameClone.shape[0] / 2
         h = frameClone.shape[1] / 2
 
